@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<canvas id="gl-canvas" width="800" height="800"> </canvas>
+<div>
+<button id = "toggleX">Toggle X Plane</button>
+<button id = "toggleY">Toggle Y Plane</button>
+<button id = "toggleZ">Toggle Z Plane</button>
+<button id = "ButtonX">Rotate X</button>
+<button id = "ButtonY">Rotate Y</button>
+<button id = "ButtonZ">Rotate Z</button>
+<button id = "ButtonT">Toggle Rotation</button>
+</div>
+<div>
+slide x <input id="xSlider" type="range" min="-0.5" max="0.5" step="0.05" value="0.0" />
+slide y <input id="ySlider" type="range" min="-0.5" max="0.5" step="0.05" value="0.0" />
+slide z <input id="zSlider" type="range" min="-0.5" max="0.5" step="0.05" value="0.0" />
+Resolution <input id="resolution" type="range" min="10" max="200" step="10" value="100" />
+</div>
+<div>
+<button id = "toggleRS">Toggle Red Simplex</button>
+<button id = "toggleRP">Toggle Red Perlin</button>
+<button id = "toggleGS">Toggle Green Simplex</button>
+<button id = "toggleGP">Toggle Green Perlin</button>
+<button id = "toggleBS">Toggle Blue Simplex</button>
+<button id = "toggleBP">Toggle Blue Perlin</button>
+</div>
+<div>
+R Simplex X Scale <input id="rsx" type="range" min="10" max="100" step="10" value="50" />
+G Simplex X Scale <input id="gsx" type="range" min="10" max="100" step="10" value="75" />
+B Simplex X Scale <input id="bsx" type="range" min="10" max="100" step="10" value="100" />
+</div>
+<div>
+R Simplex Y Scale <input id="rsy" type="range" min="10" max="100" step="10" value="10" />
+G Simplex Y Scale <input id="gsy" type="range" min="10" max="100" step="10" value="75" />
+B Simplex Y Scale <input id="bsy" type="range" min="10" max="100" step="10" value="100" />
+</div>
+<div>
+R Simplex T Scale <input id="rst" type="range" min="10" max="100" step="10" value="100" />
+G Simplex T Scale <input id="gst" type="range" min="10" max="100" step="10" value="100" />
+B Simplex T Scale <input id="bst" type="range" min="10" max="100" step="10" value="100" />
+</div>
+<div>
+R Intensity Scale <input id="ri" type="range" min="1" max="255" step="1" value="100" />
+G Intensity Scale <input id="gi" type="range" min="1" max="255" step="1" value="160" />
+B Intensity Scale <input id="bi" type="range" min="1" max="255" step="1" value="255" />
+</div>
+<script id="vertex-shader" type="x-shader/x-vertex">
+#version 300 es
+
+in vec4 aPosition;
+out vec3 vTexCoord;
+
+uniform vec3 uTheta;
+
+void main()
+{
+    // Compute the sines and cosines of theta for each of
+    //   the three axes in one computation.
+    vec3 angles = radians(uTheta);
+    vec3 c = cos(angles);
+    vec3 s = sin(angles);
+
+    // Remeber: thse matrices are column-major
+    mat4 rx = mat4( 1.0,  0.0,  0.0, 0.0,
+		    0.0,  c.x,  s.x, 0.0,
+		    0.0, -s.x,  c.x, 0.0,
+		    0.0,  0.0,  0.0, 1.0 );
+
+    mat4 ry = mat4( c.y, 0.0, -s.y, 0.0,
+		    0.0, 1.0,  0.0, 0.0,
+		    s.y, 0.0,  c.y, 0.0,
+		    0.0, 0.0,  0.0, 1.0 );
+
+
+    mat4 rz = mat4( c.z, s.z, 0.0, 0.0,
+		    -s.z,  c.z, 0.0, 0.0,
+		    0.0,  0.0, 1.0, 0.0,
+		    0.0,  0.0, 0.0, 1.0 );
+
+    gl_Position = rz * ry * rx * aPosition;
+    vTexCoord = 0.5+gl_Position.xyz;
+    gl_Position.z = -gl_Position.z;
+
+}
+</script>
+
+<script id="fragment-shader" type="x-shader/x-fragment">
+#version 300 es
+
+precision highp float;
+precision highp sampler3D;
+
+in vec3 vTexCoord;
+
+out vec4 fColor;
+
+uniform sampler3D uTextureMap3D;
+
+void
+main()
+{
+    //fColor = vec4(0.0, 0.0, 0.0, 1.0);
+    fColor = texture(uTextureMap3D, vTexCoord);
+}
+</script>
+
+<script src="../Common/initShaders.js"></script>
+<script src="../Common/MVnew.js"></script>
+<script src="perlin.js"></script>
+<script src="F21_Prog4B_SpencerMeyer.js"></script>
+
+</body>
+</html>
